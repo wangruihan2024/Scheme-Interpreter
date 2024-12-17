@@ -20,7 +20,9 @@ extern std :: map<std :: string, ExprType> reserved_words;
 
 Expr Syntax :: parse(Assoc &env) {}
 
-Expr Number :: parse(Assoc &env) {}
+Expr Number :: parse(Assoc &env) {
+    return Expr(new Fixnum(n));
+}
 
 Expr Identifier :: parse(Assoc &env) {}
 

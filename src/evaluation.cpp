@@ -20,7 +20,9 @@ Value Letrec::eval(Assoc &env) {} // letrec expression
 
 Value Var::eval(Assoc &e) {} // evaluation of variable
 
-Value Fixnum::eval(Assoc &e) {} // evaluation of a fixnum
+Value Fixnum::eval(Assoc &e) {
+    return IntegerV(n);
+} // evaluation of a fixnum
 
 Value If::eval(Assoc &e) {} // if expression
 
