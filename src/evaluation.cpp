@@ -42,11 +42,29 @@ Value Binary::eval(Assoc &e) {} // evaluation of two-operators primitive
 
 Value Unary::eval(Assoc &e) {} // evaluation of single-operator primitive
 
-Value Mult::evalRator(const Value &rand1, const Value &rand2) {} // *
+Value Mult::evalRator(const Value &rand1, const Value &rand2) {
+    if(rand1->v_type != V_INT || rand2->v_type != V_INT)
+        throw RuntimeError("mistaken type");
+    Integer *a = dynamic_cast<Integer *>(rand1.get());
+    Integer *b = dynamic_cast<Integer *>(rand2.get());
+    return IntegerV((a->n) * (b->n));
+} // *
 
-Value Plus::evalRator(const Value &rand1, const Value &rand2) {} // +
+Value Plus::evalRator(const Value &rand1, const Value &rand2) {
+    if(rand1->v_type != V_INT || rand2->v_type != V_INT)
+        throw RuntimeError("mistaken type");
+    Integer *a = dynamic_cast<Integer *>(rand1.get());
+    Integer *b = dynamic_cast<Integer *>(rand2.get());
+    return IntegerV(a->n + b->n);
+} // +
 
-Value Minus::evalRator(const Value &rand1, const Value &rand2) {} // -
+Value Minus::evalRator(const Value &rand1, const Value &rand2) {
+    if(rand1->v_type != V_INT || rand2->v_type != V_INT)
+        throw RuntimeError("mistaken type");
+    Integer *a = dynamic_cast<Integer *>(rand1.get());
+    Integer *b = dynamic_cast<Integer *>(rand2.get());
+    return IntegerV((a->n) - (b->n));
+} // -
 
 Value Less::evalRator(const Value &rand1, const Value &rand2) {} // <
 
