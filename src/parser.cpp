@@ -17,6 +17,22 @@ using std :: pair;
 
 extern std :: map<std :: string, ExprType> primitives;
 extern std :: map<std :: string, ExprType> reserved_words;
+
+
+Expr Syntax :: parse(Assoc &env) {
+    return (*this)->parse(env);
+}
+
+
+Expr Number :: parse(Assoc &env) {
+    return Expr(new Fixnum(n));
+}
+ExprType Number :: gettype() {
+    return E_FIXNUM;
+}
+Expr Identifier :: parse(Assoc &env) {
+    return Expr(new Var(s));
+}
 ExprType Identifier :: gettype() {
     if(primitives[s])
         return primitives[s];
@@ -27,26 +43,20 @@ ExprType Identifier :: gettype() {
     return E_VAR;
 }
 
-Expr Syntax :: parse(Assoc &env) {
-    return (*this)->parse(env);
-}
-
-Expr Number :: parse(Assoc &env) {
-    return Expr(new Fixnum(n));
-}
-Expr Identifier :: parse(Assoc &env) {
-    return Expr(new Var(s));
-}
-
 Expr TrueSyntax :: parse(Assoc &env) {}
+ExprType TrueSyntax :: gettype() {
+    return E_TRUE;
+}
 
 Expr FalseSyntax :: parse(Assoc &env) {}
-
+ExprType FalseSyntax :: gettype() {
+    return E_FALSE;
+}
 Expr List :: parse(Assoc &env) {
     if(!stxs.size())
         throw RuntimeError("empty");
     ExprType type = stxs[0]->gettype();
-    
+
     if(type == E_PLUS) {
         if(stxs.size() != 3)
             throw RuntimeError("RE");
@@ -61,6 +71,9 @@ Expr List :: parse(Assoc &env) {
         return Expr(new Mult(stxs[1]->parse(env), stxs[2]->parse(env)));
     }
     
+}
+ExprType List :: gettype() {
+    return E_LIST;
 }
 
 #endif
