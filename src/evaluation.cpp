@@ -38,7 +38,21 @@ Value MakeVoid::eval(Assoc &e) {} // (void)
 
 Value Exit::eval(Assoc &e) {} // (exit)
 
-Value Binary::eval(Assoc &e) {} // evaluation of two-operators primitive
+Value Binary::eval(Assoc &e) {
+    Value a = rand1->eval(e), b = rand2->eval(e);
+    if(e_type == E_PLUS) {
+        Plus *p = dynamic_cast<Plus*>(this);
+        return p->evalRator(a, b);
+    }
+    if(e_type == E_MINUS) {
+        Minus *p = dynamic_cast<Minus*>(this);
+        return p->evalRator(a, b);
+    }
+    if(e_type == E_MUL) {
+        Mult *p = dynamic_cast<Mult*>(this);
+        return p->evalRator(a, b);
+    }
+} // evaluation of two-operators primitive
 
 Value Unary::eval(Assoc &e) {} // evaluation of single-operator primitive
 

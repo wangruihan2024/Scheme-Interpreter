@@ -56,7 +56,9 @@ Expr List :: parse(Assoc &env) {
     if(!stxs.size())
         throw RuntimeError("empty");
     ExprType type = stxs[0]->gettype();
-
+    /*stxs[0]->show(std::cout);
+    stxs[1]->show(std::cout);
+    stxs[2]->show(std::cout);*/
     if(type == E_PLUS) {
         if(stxs.size() != 3)
             throw RuntimeError("RE");
