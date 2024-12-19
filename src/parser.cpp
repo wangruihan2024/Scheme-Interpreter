@@ -23,7 +23,6 @@ Expr Syntax :: parse(Assoc &env) {
     return (*this)->parse(env);
 }
 
-
 Expr Number :: parse(Assoc &env) {
     return Expr(new Fixnum(n));
 }
@@ -43,12 +42,16 @@ ExprType Identifier :: gettype() {
     return E_VAR;
 }
 
-Expr TrueSyntax :: parse(Assoc &env) {}
+Expr TrueSyntax :: parse(Assoc &env) {
+    return Expr(new True());
+}
 ExprType TrueSyntax :: gettype() {
     return E_TRUE;
 }
 
-Expr FalseSyntax :: parse(Assoc &env) {}
+Expr FalseSyntax :: parse(Assoc &env) {
+    return Expr(new False());
+}
 ExprType FalseSyntax :: gettype() {
     return E_FALSE;
 }
@@ -71,6 +74,34 @@ Expr List :: parse(Assoc &env) {
         if(stxs.size() != 3)
             throw RuntimeError("RE");
         return Expr(new Mult(stxs[1]->parse(env), stxs[2]->parse(env)));
+    }else if(type == E_EXIT) {
+        if(stxs.size() != 1)
+            throw RuntimeError("RE");
+        return Expr(new Exit());
+    }else if(type == E_BOOLQ) {
+        if(stxs.size() != 2)
+            throw RuntimeError("RE");
+        return Expr(new IsBoolean(stxs[1]->parse(env)));
+    }else if(type == E_VOID) {
+        if(stxs.size() != 1)
+            throw RuntimeError("RE");
+        return Expr(new MakeVoid());
+    }else if(type == E_CONS) {
+        if(stxs.size() != 3)
+            throw RuntimeError("RE");
+        return Expr(new Cons(stxs[1]->parse(env), stxs[2]->parse(env)));
+    }else if(type == E_QUOTE) {
+        if(stxs.size() != 2)
+            throw RuntimeError("RE");
+        return Expr(new Quote(stxs[1]));
+    }else if(type == E_CAR) {
+        if(stxs.size() != 2)
+            throw RuntimeError("RE");
+        return Expr(new Car(stxs[1]->parse(env)));
+    }else if(type == E_CDR) {
+        if(stxs.size() != 2)
+            throw RuntimeError("RE");
+        return Expr(new Cdr(stxs[1]->parse(env)));
     }
     
 }

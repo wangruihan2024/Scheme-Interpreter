@@ -24,19 +24,54 @@ Value Fixnum::eval(Assoc &e) {
     return IntegerV(n);
 } // evaluation of a fixnum
 
-Value If::eval(Assoc &e) {} // if expression
+Value If::eval(Assoc &e) {
+    
+} // if expression
 
-Value True::eval(Assoc &e) {} // evaluation of #t
+Value True::eval(Assoc &e) {
+    return BooleanV(true);
+} // evaluation of #t
 
-Value False::eval(Assoc &e) {} // evaluation of #f
+Value False::eval(Assoc &e) {
+    return BooleanV(false);
+} // evaluation of #f
 
 Value Begin::eval(Assoc &e) {} // begin expression
 
-Value Quote::eval(Assoc &e) {} // quote expression
+Value Quote::eval(Assoc &e) {
+    ExprType typ = s->gettype();
+    if(typ == E_FIXNUM) {
+        Number* p = dynamic_cast<Number*>(s.get());
+        return IntegerV(p->n);
+    }else if(typ == E_FALSE) {
+        return BooleanV(false);
+    }else if(typ == E_TRUE) {
+        return BooleanV(true);
+    }else if(typ == E_LIST) {
+        if(s->gettype()==E_LIST){
+        List *p = dynamic_cast<List*>(s.get());
+        if(!(p->stxs.size())) return NullV();
+        Value v = PairV(Quote(p -> stxs[p -> stxs.size() - 1]).eval(e), NullV());
+        Value val = PairV(Quote(p -> stxs[p -> stxs.size()-1]).eval(e), NullV());
+        for(int i = p->stxs.size()-2 ; i >= 0 ; i--){
+            val = PairV(Quote(p->stxs[i]).eval(e), v);
+            v = val;
+        }
+        return val;
+        }
+    }else{
+        Identifier *p = dynamic_cast<Identifier*>(s.get());
+        return SymbolV(p->s);
+    }
+} // quote expression
 
-Value MakeVoid::eval(Assoc &e) {} // (void)
+Value MakeVoid::eval(Assoc &e) {
+    return VoidV();
+} // (void)
 
-Value Exit::eval(Assoc &e) {} // (exit)
+Value Exit::eval(Assoc &e) {
+    return TerminateV();
+} // (exit)
 
 Value Binary::eval(Assoc &e) {
     Value a = rand1->eval(e), b = rand2->eval(e);
@@ -52,9 +87,28 @@ Value Binary::eval(Assoc &e) {
         Mult *p = dynamic_cast<Mult*>(this);
         return p->evalRator(a, b);
     }
+    if(e_type == E_CONS) {
+        Cons *p = dynamic_cast<Cons*>(this);
+        return p->evalRator(a, b);
+    }
+    
 } // evaluation of two-operators primitive
 
-Value Unary::eval(Assoc &e) {} // evaluation of single-operator primitive
+Value Unary::eval(Assoc &e) {
+    Value v = rand->eval(e);
+    if(e_type == E_BOOLQ) {
+        IsBoolean *p = dynamic_cast<IsBoolean *>(this);
+        return p->evalRator(v);
+    }
+    if(e_type == E_CAR) {
+        Car *p = dynamic_cast<Car *>(this);
+        return p->evalRator(v);
+    }
+    if(e_type == E_CDR) {
+        Cdr *p = dynamic_cast<Cdr *>(this);
+        return p->evalRator(v);
+    }
+} // evaluation of single-operator primitive
 
 Value Mult::evalRator(const Value &rand1, const Value &rand2) {
     if(rand1->v_type != V_INT || rand2->v_type != V_INT)
@@ -92,13 +146,21 @@ Value Greater::evalRator(const Value &rand1, const Value &rand2) {} // >
 
 Value IsEq::evalRator(const Value &rand1, const Value &rand2) {} // eq?
 
-Value Cons::evalRator(const Value &rand1, const Value &rand2) {} // cons
+Value Cons::evalRator(const Value &rand1, const Value &rand2) {
+    return PairV(rand1, rand2);
+} // cons
 
-Value IsBoolean::evalRator(const Value &rand) {} // boolean?
+Value IsBoolean::evalRator(const Value &rand) {
+    return BooleanV(rand->v_type == V_BOOL);
+} // boolean?
 
-Value IsFixnum::evalRator(const Value &rand) {} // fixnum?
+Value IsFixnum::evalRator(const Value &rand) {
+    return BooleanV(rand->v_type == V_INT);
+} // fixnum?
 
-Value IsSymbol::evalRator(const Value &rand) {} // symbol?
+Value IsSymbol::evalRator(const Value &rand) {
+
+} // symbol?
 
 Value IsNull::evalRator(const Value &rand) {} // null?
 
@@ -108,6 +170,16 @@ Value IsProcedure::evalRator(const Value &rand) {} // procedure?
 
 Value Not::evalRator(const Value &rand) {} // not
 
-Value Car::evalRator(const Value &rand) {} // car
+Value Car::evalRator(const Value &rand) {
+    if(rand->v_type != V_PAIR)
+        throw RuntimeError("RE");
+    Pair *p = dynamic_cast<Pair*>(rand.get());
+    return p->car;
+} // car
 
-Value Cdr::evalRator(const Value &rand) {} // cdr
+Value Cdr::evalRator(const Value &rand) {
+    if(rand->v_type != V_PAIR)
+        throw RuntimeError("RE");
+    Pair *p = dynamic_cast<Pair*>(rand.get());
+    return p->cdr;
+} // cdr
