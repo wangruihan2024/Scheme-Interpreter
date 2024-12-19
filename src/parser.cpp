@@ -102,6 +102,11 @@ Expr List :: parse(Assoc &env) {
         if(stxs.size() != 2)
             throw RuntimeError("RE");
         return Expr(new Cdr(stxs[1]->parse(env)));
+    }else if(type == E_BEGIN) {
+        vector<Expr> task;
+        for (int i = 1; i <= stxs.size(); i++)
+            task.push_back(stxs[i]->parse(env));
+        return Expr(new Begin(task));
     }
     
 }

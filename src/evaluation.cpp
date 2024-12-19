@@ -36,7 +36,11 @@ Value False::eval(Assoc &e) {
     return BooleanV(false);
 } // evaluation of #f
 
-Value Begin::eval(Assoc &e) {} // begin expression
+Value Begin::eval(Assoc &e) {
+    if(es.size() == 0)
+        return NullV();
+    return es[es.size() - 1]->eval(e);
+} // begin expression
 
 Value Quote::eval(Assoc &e) {
     ExprType typ = s->gettype();
