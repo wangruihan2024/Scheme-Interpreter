@@ -45,7 +45,7 @@ Value False::eval(Assoc &e) {
 Value Begin::eval(Assoc &e) {
     if(es.size() == 0)
         return NullV();
-    for (auto it = 1; it != es.size() - 1; it++)
+    for (auto it = 0; it != es.size() - 1; it++)
         es[it]->eval(e);
     return es[es.size() - 1]->eval(e);
 } // begin expression
