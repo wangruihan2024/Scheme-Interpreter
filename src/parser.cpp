@@ -106,9 +106,61 @@ Expr List :: parse(Assoc &env) {
         return Expr(new Cdr(stxs[1]->parse(env)));
     }else if(type == E_BEGIN) {
         vector<Expr> task;
-        for (int i = 1; i <= stxs.size(); i++)
+        for (int i = 1; i < stxs.size(); i++) 
             task.push_back(stxs[i]->parse(env));
         return Expr(new Begin(task));
+    }else if(type == E_IF) {
+        if(stxs.size() != 4)
+            throw RuntimeError("RE");
+        return Expr(new If(stxs[1]->parse(env), stxs[2]->parse(env), stxs[3]->parse(env)));
+    }else if(type == E_LT) {
+        if(stxs.size() != 3)
+            throw RuntimeError("RE");
+        return Expr(new Less(stxs[1]->parse(env), stxs[2]->parse(env)));
+    }else if(type == E_LE) {
+        if(stxs.size() != 3)
+            throw RuntimeError("RE");
+        return Expr(new LessEq(stxs[1]->parse(env), stxs[2]->parse(env)));
+    }else if(type == E_EQ) {
+        if(stxs.size() != 3)
+            throw RuntimeError("RE");
+        return Expr(new Equal(stxs[1]->parse(env), stxs[2]->parse(env)));
+    }else if(type == E_GE) {
+        if(stxs.size() != 3)
+            throw RuntimeError("RE");
+        return Expr(new GreaterEq(stxs[1]->parse(env), stxs[2]->parse(env)));
+    }else if(type == E_GT) {
+        if(stxs.size() != 3)
+            throw RuntimeError("RE");
+        return Expr(new Greater(stxs[1]->parse(env), stxs[2]->parse(env)));
+    }else if(type == E_NOT) {
+        if(stxs.size() != 2)
+            throw RuntimeError("RE");
+        return Expr(new Not(stxs[1]->parse(env)));
+    }else if(type == E_INTQ) {
+        if(stxs.size() != 2)
+            throw RuntimeError("RE");
+        return Expr(new IsFixnum(stxs[1]->parse(env)));
+    }else if(type == E_BOOLQ) {
+        if(stxs.size() != 2)
+            throw RuntimeError("RE");
+        return Expr(new IsBoolean(stxs[1]->parse(env)));
+    }else if(type == E_NULLQ) {
+        if(stxs.size() != 2)
+            throw RuntimeError("RE");
+        return Expr(new IsNull(stxs[1]->parse(env)));
+    }else if(type == E_PAIRQ) {
+        if(stxs.size() != 2)
+            throw RuntimeError("RE");
+        return Expr(new IsPair(stxs[1]->parse(env)));
+    }else if(type == E_SYMBOLQ) {
+        if(stxs.size() != 2)
+            throw RuntimeError("RE");
+        return Expr(new IsSymbol(stxs[1]->parse(env)));
+    }else if(type == E_EQQ) {
+        if(stxs.size() != 3)
+            throw RuntimeError("RE");
+        return Expr(new IsEq(stxs[1]->parse(env), stxs[2]->parse(env)));
     }
     
 }

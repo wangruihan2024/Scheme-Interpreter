@@ -25,7 +25,13 @@ Value Fixnum::eval(Assoc &e) {
 } // evaluation of a fixnum
 
 Value If::eval(Assoc &e) {
-    
+    Value p = cond->eval(e);
+    Boolean *temp = dynamic_cast<Boolean*>(p.get());
+    if(temp == nullptr)
+        return conseq->eval(e);
+    else if(temp->b)
+        return conseq->eval(e);
+    return alter->eval(e);
 } // if expression
 
 Value True::eval(Assoc &e) {
@@ -105,7 +111,31 @@ Value Binary::eval(Assoc &e) {
         Cons *p = dynamic_cast<Cons*>(this);
         return p->evalRator(a, b);
     }
-    
+    if(e_type == E_LT) {
+        Less *p = dynamic_cast<Less*>(this);
+        return p->evalRator(a, b);
+    }
+    if(e_type == E_LE) {
+        LessEq *p = dynamic_cast<LessEq*>(this);
+        return p->evalRator(a, b);
+    }
+    if(e_type == E_EQ) {
+        Equal *p = dynamic_cast<Equal*>(this);
+        return p->evalRator(a, b);
+    }
+    if(e_type == E_GE) {
+        GreaterEq *p = dynamic_cast<GreaterEq*>(this);
+        return p->evalRator(a, b);
+    }
+    if(e_type == E_GT) {
+        Greater *p = dynamic_cast<Greater*>(this);
+        return p->evalRator(a, b);
+    }
+    if(e_type == E_EQQ) {
+        IsEq *p = dynamic_cast<IsEq *>(this);
+        return p->evalRator(a, b);
+    }
+
 } // evaluation of two-operators primitive
 
 Value Unary::eval(Assoc &e) {
@@ -120,6 +150,30 @@ Value Unary::eval(Assoc &e) {
     }
     if(e_type == E_CDR) {
         Cdr *p = dynamic_cast<Cdr *>(this);
+        return p->evalRator(v);
+    }
+    if(e_type == E_NOT) {
+        Not *p = dynamic_cast<Not *>(this);
+        return p->evalRator(v);
+    }
+    if(e_type == E_INTQ) {
+        IsFixnum *p = dynamic_cast<IsFixnum *>(this);
+        return p->evalRator(v);
+    }
+    if(e_type == E_BOOLQ) {
+        IsBoolean *p = dynamic_cast<IsBoolean *>(this);
+        return p->evalRator(v);
+    }
+    if(e_type == E_NULLQ) {
+        IsNull *p = dynamic_cast<IsNull *>(this);
+        return p->evalRator(v);
+    }
+    if(e_type == E_PAIRQ) {
+        IsPair *p = dynamic_cast<IsPair *>(this);
+        return p->evalRator(v);
+    }
+    if(e_type == E_SYMBOLQ) {
+        IsSymbol *p = dynamic_cast<IsSymbol *>(this);
         return p->evalRator(v);
     }
 } // evaluation of single-operator primitive
@@ -148,17 +202,79 @@ Value Minus::evalRator(const Value &rand1, const Value &rand2) {
     return IntegerV((a->n) - (b->n));
 } // -
 
-Value Less::evalRator(const Value &rand1, const Value &rand2) {} // <
+Value Less::evalRator(const Value &rand1, const Value &rand2) {
+    if(rand1->v_type != V_INT || rand2->v_type != V_INT)
+        throw RuntimeError("mistaken type");
+    Integer *a = dynamic_cast<Integer *>(rand1.get());
+    Integer *b = dynamic_cast<Integer *>(rand2.get());
+    if(a->n < b->n)
+        return BooleanV(true);
+    return BooleanV(false);
+} // <
 
-Value LessEq::evalRator(const Value &rand1, const Value &rand2) {} // <=
+Value LessEq::evalRator(const Value &rand1, const Value &rand2) {
+        if(rand1->v_type != V_INT || rand2->v_type != V_INT)
+        throw RuntimeError("mistaken type");
+    Integer *a = dynamic_cast<Integer *>(rand1.get());
+    Integer *b = dynamic_cast<Integer *>(rand2.get());
+    if(a->n <= b->n)
+        return BooleanV(true);
+    return BooleanV(false);
+} // <=
 
-Value Equal::evalRator(const Value &rand1, const Value &rand2) {} // =
+Value Equal::evalRator(const Value &rand1, const Value &rand2) {
+        if(rand1->v_type != V_INT || rand2->v_type != V_INT)
+        throw RuntimeError("mistaken type");
+    Integer *a = dynamic_cast<Integer *>(rand1.get());
+    Integer *b = dynamic_cast<Integer *>(rand2.get());
+    if(a->n == b->n)
+        return BooleanV(true);
+    return BooleanV(false);
+} // =
 
-Value GreaterEq::evalRator(const Value &rand1, const Value &rand2) {} // >=
+Value GreaterEq::evalRator(const Value &rand1, const Value &rand2) {
+        if(rand1->v_type != V_INT || rand2->v_type != V_INT)
+        throw RuntimeError("mistaken type");
+    Integer *a = dynamic_cast<Integer *>(rand1.get());
+    Integer *b = dynamic_cast<Integer *>(rand2.get());
+    if(a->n >= b->n)
+        return BooleanV(true);
+    return BooleanV(false);
+} // >=
 
-Value Greater::evalRator(const Value &rand1, const Value &rand2) {} // >
+Value Greater::evalRator(const Value &rand1, const Value &rand2) {
+        if(rand1->v_type != V_INT || rand2->v_type != V_INT)
+        throw RuntimeError("mistaken type");
+    Integer *a = dynamic_cast<Integer *>(rand1.get());
+    Integer *b = dynamic_cast<Integer *>(rand2.get());
+    if(a->n > b->n)
+        return BooleanV(true);
+    return BooleanV(false);
+} // >
 
-Value IsEq::evalRator(const Value &rand1, const Value &rand2) {} // eq?
+Value IsEq::evalRator(const Value &rand1, const Value &rand2) {
+    if(rand1->v_type == rand2->v_type) {
+        ValueType vt = rand1->v_type;
+        if(vt == V_INT) {
+            Integer *p1 = dynamic_cast<Integer *>(rand1.get());
+            Integer *p2 = dynamic_cast<Integer *>(rand2.get());
+            return BooleanV(p1->n == p2->n);
+        }else if(vt == V_BOOL) {
+            Boolean *p1 = dynamic_cast<Boolean *>(rand1.get());
+            Boolean *p2 = dynamic_cast<Boolean *>(rand2.get());
+            return BooleanV(p1->b == p2->b);
+        }else if(vt == V_SYM) {
+            Symbol *p1 = dynamic_cast<Symbol *>(rand1.get());
+            Symbol *p2 = dynamic_cast<Symbol *>(rand2.get());
+            return BooleanV(p1->s == p2->s);
+        }else if(vt == V_NULL || vt == V_VOID) {
+            return BooleanV(true);
+        }else {
+            return BooleanV(rand1.get() == rand2.get());
+        }
+    }
+    return BooleanV(false);
+} // eq?
 
 Value Cons::evalRator(const Value &rand1, const Value &rand2) {
     return PairV(rand1, rand2);
@@ -173,16 +289,28 @@ Value IsFixnum::evalRator(const Value &rand) {
 } // fixnum?
 
 Value IsSymbol::evalRator(const Value &rand) {
-
+    return BooleanV(rand->v_type == V_SYM);
 } // symbol?
 
-Value IsNull::evalRator(const Value &rand) {} // null?
+Value IsNull::evalRator(const Value &rand) {
+    return BooleanV(rand->v_type == V_NULL);
+} // null?
 
-Value IsPair::evalRator(const Value &rand) {} // pair?
+Value IsPair::evalRator(const Value &rand) {
+    return BooleanV(rand->v_type == V_PAIR);
+} // pair?
 
 Value IsProcedure::evalRator(const Value &rand) {} // procedure?
 
-Value Not::evalRator(const Value &rand) {} // not
+Value Not::evalRator(const Value &rand) {
+    if(rand->v_type == V_BOOL) {
+        Boolean *p = dynamic_cast<Boolean *>(rand.get());
+        if(p->b)
+            return BooleanV(false);
+        return BooleanV(true);
+    }
+    return BooleanV(false);
+} // not
 
 Value Car::evalRator(const Value &rand) {
     if(rand->v_type != V_PAIR)
