@@ -58,7 +58,8 @@ void Boolean::show(std::ostream &os) {
 }
 
 void Symbol::show(std::ostream &os) {
-    os << s;
+  // os << "symbol";
+  os << s;
 }
 
 void Null::show(std::ostream &os) {
@@ -74,6 +75,7 @@ void Terminate::show(std::ostream &os) {
 }
 
 void Pair::show(std::ostream &os) {
+  // os << "pair";
   os << '(' << car;
   cdr->showCdr(os);
 }

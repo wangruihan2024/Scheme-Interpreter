@@ -39,6 +39,8 @@ ExprType Identifier :: gettype() {
         return reserved_words[s];
     if(s == "let")
         return E_LET;
+    if(s == ".")
+        return E_DOT;
     return E_VAR;
 }
 

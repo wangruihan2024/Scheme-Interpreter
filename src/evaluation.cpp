@@ -39,6 +39,8 @@ Value False::eval(Assoc &e) {
 Value Begin::eval(Assoc &e) {
     if(es.size() == 0)
         return NullV();
+    for (auto it = 1; it != es.size() - 1; it++)
+        es[it]->eval(e);
     return es[es.size() - 1]->eval(e);
 } // begin expression
 
@@ -52,16 +54,28 @@ Value Quote::eval(Assoc &e) {
     }else if(typ == E_TRUE) {
         return BooleanV(true);
     }else if(typ == E_LIST) {
-        if(s->gettype()==E_LIST){
         List *p = dynamic_cast<List*>(s.get());
+        /*p->stxs[0]->show(std::cout);
+        std::cout << std::endl;
+        p->stxs[1]->show(std::cout);
+        std::cout << std::endl;
+        p->stxs[2]->show(std::cout);
+        std::cout << std::endl;*/
         if(!(p->stxs.size())) return NullV();
-        Value v = PairV(Quote(p -> stxs[p -> stxs.size() - 1]).eval(e), NullV());
-        Value val = PairV(Quote(p -> stxs[p -> stxs.size()-1]).eval(e), NullV());
-        for(int i = p->stxs.size()-2 ; i >= 0 ; i--){
-            val = PairV(Quote(p->stxs[i]).eval(e), v);
-            v = val;
-        }
-        return val;
+        ExprType ls = p -> stxs[p -> stxs.size() - 2] -> gettype();
+        if(ls == E_DOT) {
+            // std::cout << "dot" << std::endl;
+            Value v = Quote(p -> stxs[p -> stxs.size() - 1]).eval(e);
+            if(p->stxs.size() >= 3) {
+                for (int i = p->stxs.size() - 3; i >= 0; i--)
+                    v = PairV(Quote(p->stxs[i]).eval(e), v);
+                return v;
+            }
+        }else {
+            Value v = NullV();
+            for(int i = p->stxs.size()-1 ; i >= 0 ; i--)
+                v = PairV(Quote(p->stxs[i]).eval(e), v);
+            return v;
         }
     }else{
         Identifier *p = dynamic_cast<Identifier*>(s.get());
