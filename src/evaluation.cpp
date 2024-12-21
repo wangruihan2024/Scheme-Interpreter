@@ -62,15 +62,11 @@ Value Quote::eval(Assoc &e) {
         p->stxs[2]->show(std::cout);
         std::cout << std::endl;*/
         if(!(p->stxs.size())) return NullV();
-        ExprType ls = p -> stxs[p -> stxs.size() - 2] -> gettype();
-        if(ls == E_DOT) {
-            // std::cout << "dot" << std::endl;
+        if(p->stxs.size() >= 3 && p -> stxs[p -> stxs.size() - 2] -> gettype() == E_DOT){
             Value v = Quote(p -> stxs[p -> stxs.size() - 1]).eval(e);
-            if(p->stxs.size() >= 3) {
-                for (int i = p->stxs.size() - 3; i >= 0; i--)
-                    v = PairV(Quote(p->stxs[i]).eval(e), v);
-                return v;
-            }
+            for (int i = p->stxs.size() - 3; i >= 0; i--)
+                v = PairV(Quote(p->stxs[i]).eval(e), v);
+            return v;
         }else {
             Value v = NullV();
             for(int i = p->stxs.size()-1 ; i >= 0 ; i--)
