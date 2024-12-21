@@ -207,49 +207,39 @@ Value Less::evalRator(const Value &rand1, const Value &rand2) {
         throw RuntimeError("mistaken type");
     Integer *a = dynamic_cast<Integer *>(rand1.get());
     Integer *b = dynamic_cast<Integer *>(rand2.get());
-    if(a->n < b->n)
-        return BooleanV(true);
-    return BooleanV(false);
+    return BooleanV(a->n < b->n);
 } // <
 
 Value LessEq::evalRator(const Value &rand1, const Value &rand2) {
-        if(rand1->v_type != V_INT || rand2->v_type != V_INT)
+    if(rand1->v_type != V_INT || rand2->v_type != V_INT)
         throw RuntimeError("mistaken type");
     Integer *a = dynamic_cast<Integer *>(rand1.get());
     Integer *b = dynamic_cast<Integer *>(rand2.get());
-    if(a->n <= b->n)
-        return BooleanV(true);
-    return BooleanV(false);
+    return BooleanV(a->n <= b->n);
 } // <=
 
 Value Equal::evalRator(const Value &rand1, const Value &rand2) {
-        if(rand1->v_type != V_INT || rand2->v_type != V_INT)
+    if(rand1->v_type != V_INT || rand2->v_type != V_INT)
         throw RuntimeError("mistaken type");
     Integer *a = dynamic_cast<Integer *>(rand1.get());
     Integer *b = dynamic_cast<Integer *>(rand2.get());
-    if(a->n == b->n)
-        return BooleanV(true);
-    return BooleanV(false);
+    return BooleanV(a->n == b->n);
 } // =
 
 Value GreaterEq::evalRator(const Value &rand1, const Value &rand2) {
-        if(rand1->v_type != V_INT || rand2->v_type != V_INT)
+    if(rand1->v_type != V_INT || rand2->v_type != V_INT)
         throw RuntimeError("mistaken type");
     Integer *a = dynamic_cast<Integer *>(rand1.get());
     Integer *b = dynamic_cast<Integer *>(rand2.get());
-    if(a->n >= b->n)
-        return BooleanV(true);
-    return BooleanV(false);
+    return BooleanV(a->n >= b->n);
 } // >=
 
 Value Greater::evalRator(const Value &rand1, const Value &rand2) {
-        if(rand1->v_type != V_INT || rand2->v_type != V_INT)
+    if(rand1->v_type != V_INT || rand2->v_type != V_INT)
         throw RuntimeError("mistaken type");
     Integer *a = dynamic_cast<Integer *>(rand1.get());
     Integer *b = dynamic_cast<Integer *>(rand2.get());
-    if(a->n > b->n)
-        return BooleanV(true);
-    return BooleanV(false);
+    return BooleanV(a->n > b->n);
 } // >
 
 Value IsEq::evalRator(const Value &rand1, const Value &rand2) {
