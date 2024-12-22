@@ -10,7 +10,24 @@
 extern std :: map<std :: string, ExprType> primitives;
 extern std :: map<std :: string, ExprType> reserved_words;
 
-Value Let::eval(Assoc &env) {} // let expression
+Value Let::eval(Assoc &env) {
+    Assoc e = empty();
+    for (auto it = env; it.get() != nullptr; it = it->next)
+        e = extend(it->x, it->v, e);
+    for (int i = 0; i < bind.size(); i++) {
+        bool if_change = false;
+        for (auto j = e; j.get() != nullptr; j = j->next) {
+            if(j->x == bind[i].first) {
+                if_change = true;
+                modify(bind[i].first, bind[i].second->eval(env), e);
+                break;
+            }
+        }
+        if(!if_change)
+            e = extend(bind[i].first, bind[i].second->eval(env), e);
+    }
+    return body->eval(e);
+} // let expression
 
 Value Lambda::eval(Assoc &env) {
     // std::cout << "this is closureV" << std::endl;

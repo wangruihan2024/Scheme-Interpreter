@@ -200,6 +200,33 @@ Expr List :: parse(Assoc &env) {
             e = extend(temp->s, NullV(), e);
         }
         return Expr(new Lambda(task, stxs[2]->parse(e)));
+    }else if(type == E_LET || type == E_LETREC) {
+        if(stxs.size() != 3)
+            throw RuntimeError("RE");
+        if(stxs[1]->gettype() != E_LIST)
+            throw RuntimeError("RE");
+        vector<pair<string, Expr>> bind;
+        List *bindlist = dynamic_cast<List *>(stxs[1].get());
+        Assoc e = empty();
+        for (auto i = env; i.get() != nullptr; i = i->next)
+            e = extend(i->x, i->v, e);
+        for (int i = 0; i < bindlist->stxs.size(); i++)
+        {
+            if (bindlist->stxs[i]->gettype() != E_LIST)
+                throw RuntimeError("RE");
+            List *bindsublist = dynamic_cast<List *>(bindlist->stxs[i].get());
+            if (bindsublist->stxs.size() != 2)
+                throw RuntimeError("RE");
+            Identifier *subpair = dynamic_cast<Identifier *>(bindsublist->stxs[0].get());
+            if (subpair == nullptr)
+                throw RuntimeError("RE");
+            bind.push_back(mp(subpair->s, bindsublist->stxs[1]->parse(env)));
+            e = extend(subpair->s, NullV(), e);
+        }
+        if(type == E_LET)
+            return Expr(new Let(bind, stxs[2]->parse(env)));
+        if(type == E_LETREC)
+            return Expr(new Letrec(bind, stxs[2]->parse(env)));
     }
     // std::cout << "NEWapply" << std::endl;
     vector<Expr> task;
