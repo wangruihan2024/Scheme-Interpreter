@@ -68,6 +68,21 @@ Expr List :: parse(Assoc &env) {
     /*stxs[0]->show(std::cout);
     stxs[1]->show(std::cout);
     stxs[2]->show(std::cout);*/
+    Identifier *id = dynamic_cast<Identifier*>(stxs[0].get());
+    if(id != nullptr) {
+        bool f = 0;
+        for (auto i = env; i.get() != nullptr; i = i->next)
+            if(i->x == id->s) {
+                f = 1;
+                break;
+            }
+        if(f) {
+            vector<Expr> task;
+            for (int i = 1; i < stxs.size(); i++)
+                task.push_back(stxs[i]->parse(env));
+            return Expr(new Apply(id->parse(env), task));
+        }
+    }
     if(type == E_PLUS) {
         if(stxs.size() != 3)
             throw RuntimeError("RE");
@@ -171,8 +186,11 @@ Expr List :: parse(Assoc &env) {
             throw RuntimeError("RE");
         if(stxs[1]->gettype() != E_LIST)
             throw RuntimeError("RE");
+        Assoc e = empty();
+        for (auto it = env; it.get() != nullptr; it = it->next) {
+            e = extend(it->x, it->v, e);
+        }
         vector<string> task;
-        Assoc e = env;
         List* tasks = dynamic_cast<List*>(stxs[1].get());
         for (int i = 0; i < tasks->stxs.size(); i++) {
             Identifier *temp = dynamic_cast<Identifier *>(tasks->stxs[i].get());
@@ -181,20 +199,14 @@ Expr List :: parse(Assoc &env) {
             task.push_back(temp->s);
             e = extend(temp->s, NullV(), e);
         }
-        for (auto it = env; it.get() != nullptr; it = it->next) {
-            e = extend(it->x, it->v, e);
-        }
-        Identifier *temp_2 = dynamic_cast<Identifier *>(stxs[2].get());
-        if(temp_2 == nullptr)
-            throw RuntimeError("RE");
         return Expr(new Lambda(task, stxs[2]->parse(e)));
-    }else {
-        // std::cout << "NEWapply" << std::endl;
-        vector<Expr> task;
-        for (int i = 1; i < stxs.size(); i++)
-            task.push_back(stxs[i]->parse(env));
-        return Expr(new Apply(stxs[0]->parse(env) , task));
     }
+    // std::cout << "NEWapply" << std::endl;
+    vector<Expr> task;
+    for (int i = 1; i < stxs.size(); i++)
+        task.push_back(stxs[i]->parse(env));
+    return Expr(new Apply(stxs[0]->parse(env) , task));
+    
     
 }
 ExprType List :: gettype() {
