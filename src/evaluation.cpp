@@ -73,7 +73,28 @@ Value Apply::eval(Assoc &e) {
     return clo->e->eval(upd_e);
 } // for function calling
 
-Value Letrec::eval(Assoc &env) {} // letrec expression
+Value Letrec::eval(Assoc &env) {
+    Assoc e1 = empty(), e2 = empty();
+    for (auto it = env; it.get() != nullptr; it = it->next) 
+        e1 = extend(it->x, it->v, e1);
+    for (int i = 0; i < bind.size(); i++) {
+        bool if_change = false;
+        for (auto j = e1; j.get() != nullptr; j = j->next) {
+            if(bind[i].first == j->x) {
+                modify(j->x, Value(nullptr), e1);
+                if_change = true;
+                break;
+            }
+        }
+        if(!if_change) 
+            e1 = extend(bind[i].first, Value(nullptr), e1);
+    }
+    for (auto it = e1; it.get() != nullptr; it = it->next)
+        e2 = extend(it->x, it->v, e2);
+    for (int i = 0; i < bind.size(); i++)
+        modify(bind[i].first, bind[i].second->eval(e2), e1);
+    return body->eval(e1);
+} // letrec expression
 
 Value Var::eval(Assoc &e) {
     // std::cout << "here is identifier-var" << std::endl;
