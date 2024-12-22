@@ -14,6 +14,7 @@ Value Let::eval(Assoc &env) {} // let expression
 
 Value Lambda::eval(Assoc &env) {
     // std::cout << "this is closureV" << std::endl;
+    // env->show(std::cout);
     return ClosureV(x, e, env);
 } // lambda expression
 

@@ -184,6 +184,9 @@ Expr List :: parse(Assoc &env) {
         for (auto it = env; it.get() != nullptr; it = it->next) {
             e = extend(it->x, it->v, e);
         }
+        Identifier *temp_2 = dynamic_cast<Identifier *>(stxs[2].get());
+        if(temp_2 == nullptr)
+            throw RuntimeError("RE");
         return Expr(new Lambda(task, stxs[2]->parse(e)));
     }else {
         // std::cout << "NEWapply" << std::endl;
