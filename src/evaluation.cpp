@@ -12,13 +12,62 @@ extern std :: map<std :: string, ExprType> reserved_words;
 
 Value Let::eval(Assoc &env) {} // let expression
 
-Value Lambda::eval(Assoc &env) {} // lambda expression
+Value Lambda::eval(Assoc &env) {
+    // std::cout << "this is closureV" << std::endl;
+    return ClosureV(x, e, env);
+} // lambda expression
 
-Value Apply::eval(Assoc &e) {} // for function calling
+Value Apply::eval(Assoc &e) {
+    Value v_temp = rator->eval(e);
+    if(v_temp->v_type != V_PROC)
+        throw RuntimeError("RE");
+    Closure *clo = dynamic_cast<Closure *>(v_temp.get());
+    if(clo->parameters.size() != rand.size())
+        throw RuntimeError("RE");
+    Assoc upd_e = empty();
+    for (auto i = e; i.get() != nullptr; i = i->next) 
+        upd_e = extend(i->x, i->v, upd_e);
+    for (auto it = clo->env; it.get() != nullptr; it = it->next) {
+        bool if_change = false;
+        for (auto it2 = upd_e; it2.get() != nullptr; it2 = it2->next) {
+            if(it->x == it2->x) {
+                if_change = true;
+                modify(it2->x, it2->v, upd_e);
+                break;
+            }
+        }
+        if(!if_change)
+            extend(it->x, it->v, upd_e);
+    }
+    for (int i = 0; i < rand.size(); i++) {
+        Value v = rand[i]->eval(e);
+        bool if_change = 0;
+        for (auto it = upd_e; it.get() != nullptr; it = it->next) {
+            if(clo->parameters[i] == it->x) {
+                modify(clo->parameters[i], v, upd_e);
+                if_change = true;
+                break;
+            }
+        }
+        if(!if_change)
+            upd_e = extend(clo->parameters[i], v, upd_e);
+    }
+    return clo->e->eval(upd_e);
+} // for function calling
 
 Value Letrec::eval(Assoc &env) {} // letrec expression
 
-Value Var::eval(Assoc &e) {} // evaluation of variable
+Value Var::eval(Assoc &e) {
+    // std::cout << "here is identifier-var" << std::endl;
+    // for (auto it = e; it.get() != nullptr; it = it->next){
+    //     std::cout << it->x << std::endl;
+    // }
+    Value tmp = find(x, e);
+    if(tmp.get() == nullptr)
+        throw RuntimeError("RE");
+    return tmp;
+    
+} // evaluation of variable
 
 Value Fixnum::eval(Assoc &e) {
     return IntegerV(n);
@@ -290,7 +339,9 @@ Value IsPair::evalRator(const Value &rand) {
     return BooleanV(rand->v_type == V_PAIR);
 } // pair?
 
-Value IsProcedure::evalRator(const Value &rand) {} // procedure?
+Value IsProcedure::evalRator(const Value &rand) {
+    return BooleanV(rand->v_type == V_PROC);
+} // procedure?
 
 Value Not::evalRator(const Value &rand) {
     if(rand->v_type == V_BOOL) {

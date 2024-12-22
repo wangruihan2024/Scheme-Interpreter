@@ -7,6 +7,7 @@
 #include "Def.hpp"
 #include "syntax.hpp"
 #include "expr.hpp"
+#include "value.hpp"
 #include <map>
 #include <cstring>
 #include <iostream>
@@ -30,6 +31,7 @@ ExprType Number :: gettype() {
     return E_FIXNUM;
 }
 Expr Identifier :: parse(Assoc &env) {
+    // std::cout << "here is identifier-var" << std::endl;
     return Expr(new Var(s));
 }
 ExprType Identifier :: gettype() {
@@ -58,6 +60,8 @@ ExprType FalseSyntax :: gettype() {
     return E_FALSE;
 }
 Expr List :: parse(Assoc &env) {
+    // std::cout << "the following is stxs[0]" << std::endl;
+    // stxs[0]->show(std::cout);
     if(!stxs.size())
         throw RuntimeError("empty");
     ExprType type = stxs[0]->gettype();
@@ -161,6 +165,32 @@ Expr List :: parse(Assoc &env) {
         if(stxs.size() != 3)
             throw RuntimeError("RE");
         return Expr(new IsEq(stxs[1]->parse(env), stxs[2]->parse(env)));
+    }else if(type == E_LAMBDA) {
+        // std::cout << "lambda" << std::endl;
+        if(stxs.size() != 3)
+            throw RuntimeError("RE");
+        if(stxs[1]->gettype() != E_LIST)
+            throw RuntimeError("RE");
+        vector<string> task;
+        Assoc e = env;
+        List* tasks = dynamic_cast<List*>(stxs[1].get());
+        for (int i = 0; i < tasks->stxs.size(); i++) {
+            Identifier *temp = dynamic_cast<Identifier *>(tasks->stxs[i].get());
+            if(temp == nullptr)
+                throw RuntimeError("RE");
+            task.push_back(temp->s);
+            e = extend(temp->s, NullV(), e);
+        }
+        for (auto it = env; it.get() != nullptr; it = it->next) {
+            e = extend(it->x, it->v, e);
+        }
+        return Expr(new Lambda(task, stxs[2]->parse(e)));
+    }else {
+        // std::cout << "NEWapply" << std::endl;
+        vector<Expr> task;
+        for (int i = 1; i < stxs.size(); i++)
+            task.push_back(stxs[i]->parse(env));
+        return Expr(new Apply(stxs[0]->parse(env) , task));
     }
     
 }

@@ -22,6 +22,7 @@ struct Expr {
     ExprBase* operator -> () const;
     ExprBase& operator * ();
     ExprBase* get() const;
+    Expr() : ptr(nullptr) {}
 };
 
 struct Let : ExprBase {
