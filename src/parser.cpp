@@ -205,7 +205,7 @@ Expr List :: parse(Assoc &env) {
             throw RuntimeError("RE");
         if(stxs[1]->gettype() != E_LIST)
             throw RuntimeError("RE");
-        vector<pair<string, Expr>> bind;
+        vector<pair<string, Expr>> vec;
         List *bindlist = dynamic_cast<List *>(stxs[1].get());
         Assoc e = empty();
         for (auto i = env; i.get() != nullptr; i = i->next)
@@ -220,13 +220,14 @@ Expr List :: parse(Assoc &env) {
             Identifier *subpair = dynamic_cast<Identifier *>(bindsublist->stxs[0].get());
             if (subpair == nullptr)
                 throw RuntimeError("RE");
-            bind.push_back(mp(subpair->s, bindsublist->stxs[1]->parse(env)));
+            vec.push_back(mp(subpair->s, bindsublist->stxs[1]->parse(env)));
             e = extend(subpair->s, NullV(), e);
+            // std::cout << vec[i].first << std::endl;
         }
         if(type == E_LET)
-            return Expr(new Let(bind, stxs[2]->parse(env)));
+            return Expr(new Let(vec, stxs[2]->parse(e)));
         if(type == E_LETREC)
-            return Expr(new Letrec(bind, stxs[2]->parse(env)));
+            return Expr(new Letrec(vec, stxs[2]->parse(e)));
     }
     // std::cout << "NEWapply" << std::endl;
     vector<Expr> task;

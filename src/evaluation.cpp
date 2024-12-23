@@ -26,6 +26,12 @@ Value Let::eval(Assoc &env) {
         if(!if_change)
             e = extend(bind[i].first, bind[i].second->eval(env), e);
     }
+    // for (auto it = e; it.get() != nullptr; it = it->next) {
+    //     std::cout << it->x << "---";
+    //     it->v->show(std::cout);
+    //     std::cout << std::endl;
+    // }
+        
     return body->eval(e);
 } // let expression
 
@@ -36,42 +42,47 @@ Value Lambda::eval(Assoc &env) {
 } // lambda expression
 
 Value Apply::eval(Assoc &e) {
-    Value v_temp = rator->eval(e);
-    if(v_temp->v_type != V_PROC)
+    Value v_temp = rator.get()->eval(e);
+    if(v_temp.get()->v_type != V_PROC)
         throw RuntimeError("RE");
     Closure *clo = dynamic_cast<Closure *>(v_temp.get());
-    if(clo->parameters.size() != rand.size())
+    std::vector<Value> val;
+    for (int i = 0; i < rand.size(); i++)
+        val.push_back(rand[i]->eval(e));
+    if(val.size() != clo->parameters.size())
         throw RuntimeError("RE");
     Assoc upd_e = empty();
-    for (auto i = e; i.get() != nullptr; i = i->next) 
+    for (auto i = clo->env; i.get() != nullptr; i = i->next)
         upd_e = extend(i->x, i->v, upd_e);
-    for (auto it = clo->env; it.get() != nullptr; it = it->next) {
-        bool if_change = false;
-        for (auto it2 = upd_e; it2.get() != nullptr; it2 = it2->next) {
-            if(it->x == it2->x) {
-                if_change = true;
-                modify(it2->x, it2->v, upd_e);
-                break;
-            }
-        }
-        if(!if_change)
-            extend(it->x, it->v, upd_e);
-    }
-    for (int i = 0; i < rand.size(); i++) {
-        Value v = rand[i]->eval(e);
-        bool if_change = 0;
-        for (auto it = upd_e; it.get() != nullptr; it = it->next) {
-            if(clo->parameters[i] == it->x) {
-                modify(clo->parameters[i], v, upd_e);
-                if_change = true;
-                break;
-            }
-        }
-        if(!if_change)
-            upd_e = extend(clo->parameters[i], v, upd_e);
-    }
-    return clo->e->eval(upd_e);
+    for (int i = 0; i < clo->parameters.size(); i++)
+        upd_e = extend(clo->parameters[i], val[i], upd_e);
+    return clo->e.get()->eval(upd_e);
 } // for function calling
+
+void changeV(Value &v, Assoc &e1, Assoc &e2) {
+    if(v->v_type == V_PROC) {
+        Closure *p = dynamic_cast<Closure *>(v.get());
+        for (auto i = e1; i.get() != nullptr; i = i->next) {
+            bool if_change = 0;
+            for (auto j = p->env; j.get() != nullptr; j = j->next) {
+                    if(i->x == j->x) {
+                        if(find(i->x, e2).get() == j->v.get())
+                            modify(i->x, i->v, p->env);
+                        if_change = true;
+                        break;
+                    }
+            }
+            if(!if_change)
+                p->env = extend(i->x, i->v, p->env);
+        }
+        return;
+    }else if(v->v_type == V_PAIR) {
+        Pair *p = dynamic_cast<Pair *>(v.get());
+        changeV(p->car, e1, e2);
+        changeV(p->cdr, e1, e2);
+        return;
+    }
+}
 
 Value Letrec::eval(Assoc &env) {
     Assoc e1 = empty(), e2 = empty();
@@ -81,7 +92,7 @@ Value Letrec::eval(Assoc &env) {
         bool if_change = false;
         for (auto j = e1; j.get() != nullptr; j = j->next) {
             if(bind[i].first == j->x) {
-                modify(j->x, Value(nullptr), e1);
+                modify(bind[i].first, Value(nullptr), e1);
                 if_change = true;
                 break;
             }
@@ -93,6 +104,10 @@ Value Letrec::eval(Assoc &env) {
         e2 = extend(it->x, it->v, e2);
     for (int i = 0; i < bind.size(); i++)
         modify(bind[i].first, bind[i].second->eval(e2), e1);
+    for (int i = 0; i < bind.size(); i++)
+        for (auto j = e1; j.get() != nullptr; j = j->next)
+            if(j->x == bind[i].first)
+                changeV(j->v, e1, e2);
     return body->eval(e1);
 } // letrec expression
 
@@ -262,6 +277,10 @@ Value Unary::eval(Assoc &e) {
     }
     if(e_type == E_SYMBOLQ) {
         IsSymbol *p = dynamic_cast<IsSymbol *>(this);
+        return p->evalRator(v);
+    }
+    if(e_type == E_PROCQ) {
+        IsProcedure *p = dynamic_cast<IsProcedure *>(this);
         return p->evalRator(v);
     }
 } // evaluation of single-operator primitive
