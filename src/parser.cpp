@@ -233,9 +233,7 @@ Expr List :: parse(Assoc &env) {
     vector<Expr> task;
     for (int i = 1; i < stxs.size(); i++)
         task.push_back(stxs[i]->parse(env));
-    return Expr(new Apply(stxs[0]->parse(env) , task));
-    
-    
+    return Expr(new Apply(stxs[0]->parse(env), task));
 }
 ExprType List :: gettype() {
     return E_LIST;

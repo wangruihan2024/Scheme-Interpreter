@@ -82,7 +82,7 @@ void changeV(Value &v, Assoc &e1, Assoc &e2) {
         changeV(p->cdr, e1, e2);
         return;
     }
-}
+} // update the env in closure
 
 Value Letrec::eval(Assoc &env) {
     Assoc e1 = empty(), e2 = empty();
@@ -171,12 +171,15 @@ Value Quote::eval(Assoc &e) {
         p->stxs[2]->show(std::cout);
         std::cout << std::endl;*/
         if(!(p->stxs.size())) return NullV();
+        // pair with dot
         if(p->stxs.size() >= 3 && p -> stxs[p -> stxs.size() - 2] -> gettype() == E_DOT){
             Value v = Quote(p -> stxs[p -> stxs.size() - 1]).eval(e);
             for (int i = p->stxs.size() - 3; i >= 0; i--)
                 v = PairV(Quote(p->stxs[i]).eval(e), v);
-            return v;
-        }else {
+            return v; 
+        }
+        // pair without dot
+        else {
             Value v = NullV();
             for(int i = p->stxs.size()-1 ; i >= 0 ; i--)
                 v = PairV(Quote(p->stxs[i]).eval(e), v);
